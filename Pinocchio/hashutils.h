@@ -22,29 +22,24 @@
 #include "mathutils.h"
 
 #ifndef _WIN32
-//#include <unordered_map>
-#include <ext/hash_map>
-//#include <undorderd_set>
-#include <ext/hash_set>
+#include <functional>
 
-#define _HASH_NAMESPACE __gnu_cxx
+using namespace std;
 
-using namespace _HASH_NAMESPACE;
-
-namespace _HASH_NAMESPACE {
+namespace std {
     template<class T1, class T2> struct hash<pair<T1, T2> >
     {
         size_t operator()(const pair<T1, T2> &p) const { return hash<T1>()(p.first) + 37 * hash<T2>()(p.second); }
     };
 
-    template<class T> struct hash<T *>
-    {
-        size_t operator()(T *p) const { return (size_t)p; }
-    };
+    // template<class T> struct hash<T *>
+    // {
+    //     size_t operator()(T *p) const { return (size_t)p; }
+    // };
 }
 
 #define MAKE_HASH(type, code) \
-    namespace _HASH_NAMESPACE { \
+    namespace std { \
         template<> struct hash<type> \
         { \
             size_t operator()(const type &p) const { code } \

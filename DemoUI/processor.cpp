@@ -165,6 +165,7 @@ void process(const vector<string> &args, MyWindow *w)
 
     if(a.stopAtMesh) { //if early bailout
         w->addMesh(new StaticDisplayMesh(m));
+        Debugging::out() << "Early bailout" << endl;
         return;
     }
 
