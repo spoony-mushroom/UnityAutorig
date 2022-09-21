@@ -1,0 +1,33 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(lldb) Launch DemoUI",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/DemoUI/DemoUI",
+            "args": ["${workspaceFolder}/test/skier3.obj", "-motion", "${workspaceFolder}/DemoUI/data/walk.txt"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "(lldb) Launch DemoUI 2",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/DemoUI/DemoUI",
+            "args": ["${workspaceFolder}/test/skier3.obj", "-mo"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        }
+
+    ]
+}

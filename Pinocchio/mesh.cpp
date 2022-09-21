@@ -23,6 +23,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <algorithm>
 
@@ -530,7 +531,7 @@ void Mesh::readStl(istream &strm)
     int i;
     int lineNum = 0;
     
-    hash_map<StlVtx, int> vertexIdx;
+    unordered_map<StlVtx, int> vertexIdx;
     
     vector<int> lastIdxs;
     
