@@ -87,8 +87,8 @@ public:
     Real operator*(const Self &other) const { return accumulate(multiplies<Real>(), plus<Real>(), other); }
     Self operator+(const Self &other) const { return apply(plus<Real>(), other); }
     Self operator-(const Self &other) const { return apply(minus<Real>(), other); }
-    Self operator*(const Real &scalar) const { return apply(bind(multiplies<Real>(), scalar, placeholders::_1)); }
-    Self operator/(const Real &scalar) const { return apply(bind(divides<Real>(), scalar, placeholders::_1)); }
+    Self operator*(const Real &scalar) const { return apply(bind(multiplies<Real>(), placeholders::_1, scalar)); }
+    Self operator/(const Real &scalar) const { return apply(bind(divides<Real>(), placeholders::_1, scalar)); }
     Self operator-() const { return apply(negate<Real>()); }
     bool operator==(const Self &other) const { return accumulate(equal_to<Real>(), logical_and<Real>(), other); }
 
@@ -159,11 +159,11 @@ public:
 
     Self operator+(const Self &oth) const { return Self(m + oth.m); }
     Self operator-(const Self &oth) const { return Self(m - oth.m); }
-    Self operator*(double oth) const { return Self(m.apply(bind(myMult<Vec, Real, Vec>(), oth, placeholders::_1))); }
-    Self operator/(double oth) const { return Self(m.apply(bind(myDiv<Vec, Real, Vec>(), oth, placeholders::_1))); }
+    Self operator*(double oth) const { return Self(m.apply(bind(myMult<Vec, Real, Vec>(), placeholders::_1, oth))); }
+    Self operator/(double oth) const { return Self(m.apply(bind(myDiv<Vec, Real, Vec>(), placeholders::_1, oth))); }
     Self operator-() const { return Self(-m); }
 
-    Vec operator*(const Vec &oth) const { return m.apply(bind(myMult<Vec, Vec, Real>(), oth, placeholders::_1)); }
+    Vec operator*(const Vec &oth) const { return m.apply(bind(myMult<Vec, Vec, Real>(), placeholders::_1, oth)); }
 
     Self operator*(const Self &oth) const
     {
