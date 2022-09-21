@@ -31,11 +31,6 @@ namespace std {
     {
         size_t operator()(const pair<T1, T2> &p) const { return hash<T1>()(p.first) + 37 * hash<T2>()(p.second); }
     };
-
-    // template<class T> struct hash<T *>
-    // {
-    //     size_t operator()(T *p) const { return (size_t)p; }
-    // };
 }
 
 #define MAKE_HASH(type, code) \
