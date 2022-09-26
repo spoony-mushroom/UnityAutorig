@@ -111,3 +111,4 @@ _deps
 
 # Special folders
 build/
+.vscode/

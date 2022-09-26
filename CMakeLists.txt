@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(Pinocchio)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(Pinocchio)
+add_subdirectory(UnityPlugin)
 
 option(BUILD_CLI "Build AttachWeights exectuable")
 option(BUILD_DEMO "Build demo UI (requires FLTK)")
