@@ -50,6 +50,7 @@ public:
     bool integrityCheck() const;
     bool isConnected() const; //returns true if the mesh consists of a single connected component
     void computeVertexNormals();
+    void fixDupFaces();
     void normalizeBoundingBox();
     void computeTopology();
     void writeObj(const string &filename) const;
@@ -60,7 +61,6 @@ private:
     void readPly(istream &strm);
     void readGts(istream &strm);
     void readStl(istream &strm);
-    void fixDupFaces();
     void sortEdges(); //sort edges so that triplets forming faces are adjacent
 
 public: //data

@@ -30,6 +30,8 @@ int AUTORIG_API AutoRig(const Vec3* verts,
                         Vec3* skeletonOut,
                         float* weightsOut);
 
+const char* AUTORIG_API GetDebugMessages();
+
 #ifdef __cplusplus
 }
 #endif

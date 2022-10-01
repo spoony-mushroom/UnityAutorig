@@ -1,9 +1,11 @@
 #include "plugin.h"
-#include <mesh.h>
 #include <span>
+#include <sstream>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+#include "debugging.h"
+#include "mesh.h"
 
 const int PINOCCHIO_HUMAN_SKEL_SIZE = 18;
 
@@ -31,6 +33,11 @@ struct hash<Vec3> {
     return seed;
   }
 };
+
+Vec3 FromUnitySpace(const Vec3& vec)
+{
+  return {-vec.x, vec.y, vec.z};
+}
 }  // namespace std
 
 namespace {
@@ -53,17 +60,18 @@ Preprocess(std::span<const Vec3> verts, std::span<const int> triangles) {
   auto uniqueVertsIter = uniqueVerts.begin();
   for (int i = 0; i < mergedVerts.size(); ++i, ++uniqueVertsIter) {
     const auto& dupeList = uniqueVertsIter->second;
-    mergedVerts[i] = verts[dupeList[0]];
+    mergedVerts[i] = FromUnitySpace(verts[dupeList[0]]);
     for (int origIndex : dupeList) {
       mappings[origIndex] = i;
     }
-    ++uniqueVertsIter;
   }
 
   std::vector<int> mergedTris(triangles.size());
-  for (int i = 0; i < triangles.size(); ++i)
-  {
-    mergedTris[i] = mappings[i];
+  for (int i = 0; i < triangles.size(); i+=3) {
+    // Because we inverted x, we also need to change the windings
+    mergedTris[i] = mappings[triangles[i + 1]];
+    mergedTris[i + 1] = mappings[triangles[i]];
+    mergedTris[i + 2] = mappings[triangles[i + 2]];
   }
 
   return std::make_tuple(std::move(mergedVerts), std::move(mergedTris),
@@ -77,15 +85,22 @@ Mesh MakeMesh(std::span<const Vec3> verts, std::span<const int> triangles) {
     m.vertices.emplace_back().pos = Vector3(vec.x, vec.y, vec.z);
   }
 
-  m.edges.reserve(triangles.size() * 3);
+  m.edges.reserve(triangles.size());
   for (int index : triangles) {
     m.edges.emplace_back().vertex = index;
   }
 
-  m.computeVertexNormals();
+  m.fixDupFaces();
   m.computeTopology();
+  if (m.integrityCheck()) {
+    throw "Failed integrity check";
+  }
+  m.computeVertexNormals();
   return m;
 }
+
+static std::string s_latestMessages;
+static std::ostringstream s_debugStream;
 }  // anonymous namespace
 
 int AUTORIG_API GetSkeletonSize() {
@@ -98,8 +113,20 @@ int AUTORIG_API AutoRig(const Vec3* verts,
                         int numIndices,
                         Vec3* skeletonOut,
                         float* weightsOut) {
-  auto [processedVerts, processedTris, mappings] =
-      Preprocess({verts, (size_t)numVerts}, {triangles, (size_t)numIndices});
-  Mesh m = MakeMesh(processedVerts, processedTris);
-  return 1;
+  Debugging::setOutStream(s_debugStream);
+  try {
+    auto [processedVerts, processedTris, mappings] =
+        Preprocess({verts, (size_t)numVerts}, {triangles, (size_t)numIndices});
+    Mesh m = MakeMesh(processedVerts, processedTris);
+
+    return 1;
+  } catch (...) {
+    return 0;
+  }
+}
+
+const char* AUTORIG_API GetDebugMessages() {
+  s_latestMessages = s_debugStream.str();
+  s_debugStream.clear();
+  return s_latestMessages.c_str();
 }
