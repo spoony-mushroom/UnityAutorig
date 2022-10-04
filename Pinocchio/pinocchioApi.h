@@ -19,16 +19,17 @@
 #ifndef PINOCCHIOAPI_H
 #define PINOCCHIOAPI_H
 
+#include <memory>
 #include "mesh.h"
 #include "quaddisttree.h"
 #include "attachment.h"
 
 struct PinocchioOutput
 {
-    PinocchioOutput() : attachment(NULL) {}
+    PinocchioOutput() : attachment(nullptr) {}
 
     vector<Vector3> embedding;
-    Attachment *attachment; //user responsible for deletion
+    std::unique_ptr<Attachment> attachment; //user responsible for deletion
 };
 
 //calls the other functions and does the whole rigging process

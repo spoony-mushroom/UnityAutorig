@@ -65,7 +65,7 @@ PinocchioOutput autorig(const Skeleton &given, const Mesh &m)
 
     //attachment
     VisTester<TreeType> *tester = new VisTester<TreeType>(distanceField);
-    out.attachment = new Attachment(newMesh, given, out.embedding, tester);
+    out.attachment = std::make_unique<Attachment>(newMesh, given, out.embedding, tester);
 
     //cleanup
     delete tester;

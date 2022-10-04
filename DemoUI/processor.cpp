@@ -223,6 +223,4 @@ void process(const vector<string> &args, MyWindow *w)
         }
         astrm << endl;
     }
-
-    delete o.attachment;
 }

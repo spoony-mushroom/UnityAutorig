@@ -1,4 +1,5 @@
 #include "plugin.h"
+#include <fstream>
 #include <span>
 #include <sstream>
 #include <tuple>
@@ -6,6 +7,8 @@
 #include <vector>
 #include "debugging.h"
 #include "mesh.h"
+#include "pinocchioApi.h"
+#include "skeleton.h"
 
 const int PINOCCHIO_HUMAN_SKEL_SIZE = 18;
 
@@ -34,8 +37,7 @@ struct hash<Vec3> {
   }
 };
 
-Vec3 FromUnitySpace(const Vec3& vec)
-{
+Vec3 FromUnitySpace(const Vec3& vec) {
   return {-vec.x, vec.y, vec.z};
 }
 }  // namespace std
@@ -67,7 +69,7 @@ Preprocess(std::span<const Vec3> verts, std::span<const int> triangles) {
   }
 
   std::vector<int> mergedTris(triangles.size());
-  for (int i = 0; i < triangles.size(); i+=3) {
+  for (int i = 0; i < triangles.size(); i += 3) {
     // Because we inverted x, we also need to change the windings
     mergedTris[i] = mappings[triangles[i + 1]];
     mergedTris[i + 1] = mappings[triangles[i]];
@@ -92,7 +94,7 @@ Mesh MakeMesh(std::span<const Vec3> verts, std::span<const int> triangles) {
 
   m.fixDupFaces();
   m.computeTopology();
-  if (m.integrityCheck()) {
+  if (!m.integrityCheck()) {
     throw "Failed integrity check";
   }
   m.computeVertexNormals();
@@ -101,10 +103,12 @@ Mesh MakeMesh(std::span<const Vec3> verts, std::span<const int> triangles) {
 
 static std::string s_latestMessages;
 static std::ostringstream s_debugStream;
+static HumanSkeleton s_humanSkeleton;
+
 }  // anonymous namespace
 
 int AUTORIG_API GetSkeletonSize() {
-  return PINOCCHIO_HUMAN_SKEL_SIZE;
+  return s_humanSkeleton.fPrev().size();
 }
 
 int AUTORIG_API AutoRig(const Vec3* verts,
@@ -118,6 +122,39 @@ int AUTORIG_API AutoRig(const Vec3* verts,
     auto [processedVerts, processedTris, mappings] =
         Preprocess({verts, (size_t)numVerts}, {triangles, (size_t)numIndices});
     Mesh m = MakeMesh(processedVerts, processedTris);
+
+    HumanSkeleton skel;
+    skel.scale(0.7);
+    auto pinoOut = autorig(skel, m);
+    if (pinoOut.embedding.size() == 0) {
+      Debugging::out() << "Error embedding";
+      return 0;
+    }
+
+    for (int i = 0; i < (int)pinoOut.embedding.size(); ++i) {
+      pinoOut.embedding[i] = (pinoOut.embedding[i] - m.toAdd) / m.scale;
+    }
+
+    ofstream os("skeleton.out");
+    for (int i = 0; i < (int)pinoOut.embedding.size(); ++i) {
+      const auto& bone = pinoOut.embedding[i];
+      skeletonOut[i] = Vec3{-(float)bone[0], (float)bone[1], (float)bone[2]};
+      os << i << " " << pinoOut.embedding[i][0] << " "
+         << pinoOut.embedding[i][1] << " " << pinoOut.embedding[i][2] << " "
+         << skel.fPrev()[i] << endl;
+    }
+
+    // output attachment
+    auto weightsPtr = weightsOut;
+    std::ofstream astrm("attachment.out");
+    for (int i = 0; i < (int)m.vertices.size(); ++i) {
+      Vector<double, -1> v = pinoOut.attachment->getWeights(i);
+      for (int j = 0; j < v.size(); ++j) {
+        astrm << v[j] << " ";
+        *weightsPtr++ = v[j];
+      }
+      astrm << endl;
+    }
 
     return 1;
   } catch (...) {

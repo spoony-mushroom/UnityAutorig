@@ -2,7 +2,11 @@
 #define AUTORIG_PLUGIN_INCLUDED
 
 #ifdef _WIN32
+#ifdef UnityAutoRig_EXPORTS
 #define AUTORIG_API __declspec(dllexport)
+#else
+#define AUTORIG_API
+#endif
 #else
 #define AUTORIG_API
 #endif
